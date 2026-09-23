@@ -1,0 +1,20 @@
+[mariadb]
+# Primary와 다른 고유 번호 사용
+server_id = 2
+gtid_domain_id = 1
+
+# 역할 전환 이후에도 Binary Log를 생성할 수 있도록 동일하게 활성화
+log_bin = /var/lib/mysql/binlog
+binlog_format = ROW
+log_slave_updates = ON
+gtid_strict_mode = ON
+expire_logs_days = 7
+
+# 초기 Replica에 대한 직접 쓰기 제한
+read_only = ON
+
+bind_address = 0.0.0.0
+max_connections = 300
+character_set_server = utf8mb4
+collation_server = utf8mb4_uca1400_ai_ci
+

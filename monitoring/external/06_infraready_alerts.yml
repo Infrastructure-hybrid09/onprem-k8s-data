@@ -1,0 +1,108 @@
+groups:
+  - name: infraready.external-monitoring
+    interval: 30s
+    rules:
+      - alert: TargetDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "수집 대상 연결 실패: {{ $labels.job }} / {{ $labels.instance }}"
+          description: "PC6 Prometheus가 해당 대상을 2분 이상 수집하지 못했습니다."
+
+      - alert: HostRootDiskUsageWarning
+        expr: |
+          100 * (1 - (
+            node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"}
+            /
+            node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"}
+          )) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "루트 디스크 사용률 80% 초과: {{ $labels.instance }}"
+          description: "루트 파일시스템 사용률이 10분 이상 80%를 초과했습니다."
+
+      - alert: HostRootDiskUsageCritical
+        expr: |
+          100 * (1 - (
+            node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"}
+            /
+            node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"}
+          )) > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "루트 디스크 사용률 90% 초과: {{ $labels.instance }}"
+          description: "루트 파일시스템 사용률이 5분 이상 90%를 초과했습니다."
+
+      - alert: PrometheusDataDiskUsageWarning
+        expr: |
+          100 * (1 - (
+            node_filesystem_avail_bytes{job="monitoring-node",mountpoint="/var/lib/prometheus"}
+            /
+            node_filesystem_size_bytes{job="monitoring-node",mountpoint="/var/lib/prometheus"}
+          )) > 75
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus 데이터 디스크 사용률 75% 초과"
+          description: "Monitoring VM의 Prometheus 전용 디스크 사용률이 10분 이상 75%를 초과했습니다."
+
+      - alert: MainKubernetesNodeNotReady
+        expr: kube_node_status_condition{job="main-kube-state-metrics",condition="Ready",status="true"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Main K8s 노드 NotReady: {{ $labels.node }}"
+          description: "Main Kubernetes 노드가 5분 이상 Ready 상태가 아닙니다."
+
+      - alert: DRK3sNodeNotReady
+        expr: kube_node_status_condition{job="dr-kube-state-metrics",condition="Ready",status="true"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "DR K3s 노드 NotReady: {{ $labels.node }}"
+          description: "DR K3s 노드가 5분 이상 Ready 상태가 아닙니다."
+
+      - alert: MariaDBReplicationIOStopped
+        expr: mysql_slave_status_slave_io_running{job="mariadb"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MariaDB 복제 IO 중단: {{ $labels.instance }}"
+          description: "Replica IO thread가 1분 이상 중단되어 있습니다."
+
+      - alert: MariaDBReplicationSQLStopped
+        expr: mysql_slave_status_slave_sql_running{job="mariadb"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MariaDB 복제 SQL 중단: {{ $labels.instance }}"
+          description: "Replica SQL thread가 1분 이상 중단되어 있습니다."
+
+      - alert: MariaDBReplicationLagWarning
+        expr: mysql_slave_status_seconds_behind_master{job="mariadb"} > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MariaDB 복제 지연 10초 초과: {{ $labels.instance }}"
+          description: "MariaDB 복제 지연이 2분 이상 10초를 초과했습니다."
+
+      - alert: MariaDBReplicationLagCritical
+        expr: mysql_slave_status_seconds_behind_master{job="mariadb"} > 30
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MariaDB 복제 지연 30초 초과: {{ $labels.instance }}"
+          description: "MariaDB 복제 지연이 1분 이상 30초를 초과했습니다."

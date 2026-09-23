@@ -1,0 +1,21 @@
+# PC6 외부 모니터링 전환이 완전히 검증된 후에만 적용한다.
+# 현재 Node Exporter는 kube-prometheus-stack 내장이 아닌 별도 DaemonSet이므로
+# nodeExporter.enabled는 계속 false로 유지한다.
+
+prometheus:
+  enabled: false
+
+grafana:
+  enabled: false
+
+alertmanager:
+  enabled: false
+
+prometheusOperator:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: false

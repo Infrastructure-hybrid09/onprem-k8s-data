@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-dr-k3s
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+    app.kubernetes.io/part-of: infraready-observability
+data:
+  dr-k3s.json: |-
+    {
+      "annotations": {"list": []}, "editable": false, "graphTooltip": 1, "id": null,
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [{"options": {"0": {"color": "red", "text": "DOWN"}, "1": {"color": "green", "text": "UP"}}, "type": "value"}]}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 0, "y": 0}, "id": 1,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "up{job=\"node-exporter-k8s-existing\",instance=\"192.168.34.71:9100\"}", "instant": true, "refId": "A"}],
+          "title": "DR K3s VM", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [{"options": {"0": {"color": "red", "text": "DOWN"}, "1": {"color": "green", "text": "UP"}}, "type": "value"}]}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 4, "y": 0}, "id": 2,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "up{job=\"dr-k3s-supervisor\"}", "instant": true, "refId": "A"}],
+          "title": "K3s Supervisor", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [{"options": {"0": {"color": "red", "text": "DOWN"}, "1": {"color": "green", "text": "UP"}}, "type": "value"}]}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 8, "y": 0}, "id": 3,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "up{job=\"dr-kube-state-metrics\"}", "instant": true, "refId": "A"}],
+          "title": "DR kube-state-metrics", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [{"options": {"0": {"color": "red", "text": "DOWN"}, "1": {"color": "green", "text": "UP"}}, "type": "value"}]}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 12, "y": 0}, "id": 4,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "up{job=\"dr-backend\"}", "instant": true, "refId": "A"}],
+          "title": "DR Backend Metrics", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 16, "y": 0}, "id": 5,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "sum(kube_node_status_condition{job=\"dr-kube-state-metrics\",condition=\"Ready\",status=\"true\"})", "instant": true, "refId": "A"}],
+          "title": "DR Ready 노드", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 20, "y": 0}, "id": 6,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "sum(kube_pod_status_phase{job=\"dr-kube-state-metrics\",phase=~\"Pending|Failed|Unknown\"})", "instant": true, "refId": "A"}],
+          "title": "DR 비정상 Pod", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"decimals": 1, "max": 100, "min": 0, "unit": "percent"}, "overrides": []},
+          "gridPos": {"h": 9, "w": 8, "x": 0, "y": 5}, "id": 7,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}},
+          "targets": [{"editorMode": "code", "expr": "100 - (avg(rate(node_cpu_seconds_total{instance=\"192.168.34.71:9100\",mode=\"idle\"}[5m])) * 100)", "refId": "A"}],
+          "title": "DR K3s CPU", "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"decimals": 1, "max": 100, "min": 0, "unit": "percent"}, "overrides": []},
+          "gridPos": {"h": 9, "w": 8, "x": 8, "y": 5}, "id": 8,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}},
+          "targets": [{"editorMode": "code", "expr": "100 * (1 - node_memory_MemAvailable_bytes{instance=\"192.168.34.71:9100\"} / node_memory_MemTotal_bytes{instance=\"192.168.34.71:9100\"})", "refId": "A"}],
+          "title": "DR K3s RAM", "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"decimals": 1, "max": 100, "min": 0, "unit": "percent"}, "overrides": []},
+          "gridPos": {"h": 9, "w": 8, "x": 16, "y": 5}, "id": 9,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}},
+          "targets": [{"editorMode": "code", "expr": "100 * (1 - node_filesystem_avail_bytes{instance=\"192.168.34.71:9100\",mountpoint=\"/\",fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{instance=\"192.168.34.71:9100\",mountpoint=\"/\",fstype!~\"tmpfs|overlay\"})", "refId": "A"}],
+          "title": "DR K3s 루트 디스크", "type": "timeseries"
+        }
+      ],
+      "refresh": "30s", "schemaVersion": 39,
+      "tags": ["InfraReady", "Infrastructure", "DR", "K3s", "PC6"],
+      "templating": {"list": [{"current": {"text": "Prometheus", "value": "prometheus"}, "name": "DS_PROMETHEUS", "query": "prometheus", "refresh": 1, "type": "datasource"}]},
+      "time": {"from": "now-1h", "to": "now"}, "timezone": "browser",
+      "title": "04 Infrastructure - DR K3s", "uid": "infraready-dr-k3s", "version": 1
+    }

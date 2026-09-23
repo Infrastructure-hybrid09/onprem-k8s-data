@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - 01_overview.yaml
+  - 02_data-platform.yaml
+  - 03_main-kubernetes.yaml
+  - 04_dr-k3s.yaml
+  - 05_observability-platform.yaml
+  - 06_neuroplan-service.yaml
+  - 09_neuroplan-backend-servicemonitor.yaml

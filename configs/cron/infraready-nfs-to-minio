@@ -1,0 +1,4 @@
+# NFS 1차 백업을 MinIO 2차 사본으로 복사: 매일 02:30
+# 인증정보는 root 전용 EnvironmentFile에서 주입한다.
+30 2 * * * root . /etc/infraready/minio-backup.env && /usr/local/sbin/nfs-to-minio-sync.sh >> /var/log/infraready-nfs-to-minio.log 2>&1
+

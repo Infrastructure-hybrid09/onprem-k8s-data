@@ -1,0 +1,22 @@
+[mariadb]
+# GTID 복제에서 서버를 식별하는 고유 번호
+server_id = 1
+gtid_domain_id = 1
+
+# 행 단위 Binary Log와 GTID 사용
+log_bin = /var/lib/mysql/binlog
+binlog_format = ROW
+log_slave_updates = ON
+gtid_strict_mode = ON
+expire_logs_days = 7
+
+# 트랜잭션 내구성 설정
+sync_binlog = 1
+innodb_flush_log_at_trx_commit = 1
+
+# 데이터 네트워크 연결과 문자셋
+bind_address = 0.0.0.0
+max_connections = 300
+character_set_server = utf8mb4
+collation_server = utf8mb4_uca1400_ai_ci
+

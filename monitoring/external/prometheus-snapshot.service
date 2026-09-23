@@ -1,0 +1,9 @@
+[Unit]
+Description=Prometheus TSDB snapshot to NFS
+Wants=network-online.target
+After=network-online.target prometheus.service
+Requires=prometheus.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/prometheus-snapshot-to-nfs.sh

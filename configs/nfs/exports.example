@@ -1,0 +1,7 @@
+# MariaDB, etcd, Prometheus, 주요 설정 파일의 1차 백업 경로
+# all_squash를 사용해 클라이언트의 root 권한이 NFS 서버 root로 전달되지 않게 합니다.
+/backup/mariadb   192.168.44.0/24(rw,sync,no_subtree_check,all_squash)
+/backup/etcd      192.168.44.0/24(rw,sync,no_subtree_check,all_squash)
+/backup/prometheus 192.168.44.0/24(rw,sync,no_subtree_check,all_squash)
+/backup/config    192.168.44.0/24(rw,sync,no_subtree_check,all_squash)
+

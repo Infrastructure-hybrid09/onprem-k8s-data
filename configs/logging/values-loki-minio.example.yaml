@@ -1,0 +1,44 @@
+# 기존 values-loki.yaml과 함께 Overlay로 적용합니다.
+# Access Key와 Secret Key는 logging/loki-minio-credentials Secret에서 주입합니다.
+
+singleBinary:
+  extraArgs:
+    - -config.expand-env=true
+  extraEnvFrom:
+    - secretRef:
+        name: loki-minio-credentials
+
+loki:
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+
+  storage:
+    type: s3
+    bucketNames:
+      chunks: loki-data
+      ruler: loki-data
+      admin: loki-data
+    s3:
+      endpoint: https://192.168.44.72:9000
+      region: us-east-1
+      accessKeyId: ${LOKI_S3_ACCESS_KEY_ID}
+      secretAccessKey: ${LOKI_S3_SECRET_ACCESS_KEY}
+      signatureVersion: v4
+      s3ForcePathStyle: true
+      insecure: false
+      http_config:
+        # 실습 환경의 내부 CA를 Pod가 신뢰하지 못한 경우 사용했습니다.
+        # 운영 환경에서는 CA를 마운트하고 false로 변경하는 것이 좋습니다.
+        insecure_skip_verify: true
+
+  compactor:
+    retention_enabled: true
+    delete_request_store: s3
+

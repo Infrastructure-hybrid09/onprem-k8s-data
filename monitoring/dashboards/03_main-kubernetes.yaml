@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-main-kubernetes
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+    app.kubernetes.io/part-of: infraready-observability
+data:
+  main-kubernetes.json: |-
+    {
+      "annotations": {"list": []}, "editable": false, "graphTooltip": 1, "id": null,
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 6}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 0, "y": 0}, "id": 1,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "sum(kube_node_status_condition{condition=\"Ready\",status=\"true\",job!=\"dr-kube-state-metrics\"})", "instant": true, "refId": "A"}],
+          "title": "Main K8s Ready 노드 (목표 6)", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 4, "y": 0}, "id": 2,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "sum(kube_pod_status_phase{phase=~\"Pending|Failed|Unknown\",job!=\"dr-kube-state-metrics\"})", "instant": true, "refId": "A"}],
+          "title": "비정상 Pod", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 8, "y": 0}, "id": 3,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "sum(kube_deployment_status_replicas_unavailable{job!=\"dr-kube-state-metrics\"})", "instant": true, "refId": "A"}],
+          "title": "Deployment 미가용 Replica", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 5}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 12, "y": 0}, "id": 4,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "sum(increase(kube_pod_container_status_restarts_total{job!=\"dr-kube-state-metrics\"}[1h]))", "instant": true, "refId": "A"}],
+          "title": "최근 1시간 재시작", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 16, "y": 0}, "id": 5,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "up{job=\"main-kube-state-metrics\"}", "instant": true, "refId": "A"}],
+          "title": "Main kube-state-metrics", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 20, "y": 0}, "id": 6,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "min(up{job=\"apiserver\"})", "instant": true, "legendFormat": "API Server", "refId": "A"}],
+          "title": "API Server", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"decimals": 1, "max": 100, "min": 0, "unit": "percent"}, "overrides": []},
+          "gridPos": {"h": 9, "w": 8, "x": 0, "y": 5}, "id": 7,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"editorMode": "code", "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{job=\"node-exporter-k8s-existing\",instance=~\"192.168.34.(31|32|33|41|42|43):9100\",mode=\"idle\"}[5m])) * 100)", "legendFormat": "{{instance}}", "refId": "A"}],
+          "title": "Main K8s 노드 CPU", "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"decimals": 1, "max": 100, "min": 0, "unit": "percent"}, "overrides": []},
+          "gridPos": {"h": 9, "w": 8, "x": 8, "y": 5}, "id": 8,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"editorMode": "code", "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"node-exporter-k8s-existing\",instance=~\"192.168.34.(31|32|33|41|42|43):9100\"} / node_memory_MemTotal_bytes{job=\"node-exporter-k8s-existing\",instance=~\"192.168.34.(31|32|33|41|42|43):9100\"})", "legendFormat": "{{instance}}", "refId": "A"}],
+          "title": "Main K8s 노드 RAM", "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"decimals": 1, "max": 100, "min": 0, "unit": "percent"}, "overrides": []},
+          "gridPos": {"h": 9, "w": 8, "x": 16, "y": 5}, "id": 9,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"editorMode": "code", "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"node-exporter-k8s-existing\",instance=~\"192.168.34.(31|32|33|41|42|43):9100\",mountpoint=\"/\",fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{job=\"node-exporter-k8s-existing\",instance=~\"192.168.34.(31|32|33|41|42|43):9100\",mountpoint=\"/\",fstype!~\"tmpfs|overlay\"})", "legendFormat": "{{instance}}", "refId": "A"}],
+          "title": "Main K8s 노드 루트 디스크", "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {}, "overrides": []},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 14}, "id": 10,
+          "options": {"cellHeight": "sm", "showHeader": true},
+          "targets": [{"editorMode": "code", "expr": "max by(namespace,pod,phase) (kube_pod_status_phase{phase=~\"Pending|Failed|Unknown\",job!=\"dr-kube-state-metrics\"} == 1)", "format": "table", "instant": true, "refId": "A"}],
+          "title": "비정상 Pod 상세 (Namespace / Pod / Phase)", "type": "table"
+        }
+      ],
+      "refresh": "30s", "schemaVersion": 39,
+      "tags": ["InfraReady", "Infrastructure", "Kubernetes", "Main"],
+      "templating": {"list": [{"current": {"text": "Prometheus", "value": "prometheus"}, "name": "DS_PROMETHEUS", "query": "prometheus", "refresh": 1, "type": "datasource"}]},
+      "time": {"from": "now-1h", "to": "now"}, "timezone": "browser",
+      "title": "03 Infrastructure - Main Kubernetes", "uid": "infraready-main-kubernetes", "version": 1
+    }

@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily Prometheus TSDB snapshot to NFS
+
+[Timer]
+OnCalendar=*-*-* 01:30:00 Asia/Seoul
+Persistent=true
+Unit=prometheus-snapshot.service
+
+[Install]
+WantedBy=timers.target

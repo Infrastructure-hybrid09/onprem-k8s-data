@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-infraready-overview-v2
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+    app.kubernetes.io/part-of: infraready-observability
+data:
+  infraready-overview-v2.json: |-
+    {
+      "annotations": {"list": []},
+      "editable": false,
+      "graphTooltip": 1,
+      "id": null,
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 20}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 0, "y": 0},
+          "id": 1,
+          "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}, "textMode": "auto"},
+          "targets": [{"editorMode": "code", "expr": "count(up{job=~\"node-exporter-vm|node-exporter-k8s-existing|mariadb|dr-k3s-supervisor|dr-kube-state-metrics|dr-backend\"} == 1)", "instant": true, "refId": "A"}],
+          "title": "주요 Scrape Target UP (목표 20)",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "정상적으로 접속 가능한 MariaDB 인스턴스 수입니다. 2=두 대 정상, 1=한 대 장애, 0=두 대 장애입니다.",
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 1}, {"color": "green", "value": 2}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 4, "y": 0},
+          "id": 2,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "sum(mysql_up{job=\"mariadb\"}) or vector(0)", "instant": true, "refId": "A"}],
+          "title": "MariaDB 2대 상태", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 6}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 8, "y": 0},
+          "id": 3,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "sum(kube_node_status_condition{condition=\"Ready\",status=\"true\",job!=\"dr-kube-state-metrics\"})", "instant": true, "refId": "A"}],
+          "title": "Main K8s Ready (목표 6)", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [{"options": {"0": {"color": "red", "text": "DOWN"}, "1": {"color": "green", "text": "UP"}}, "type": "value"}], "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 12, "y": 0},
+          "id": 4,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "min(up{job=~\"dr-k3s-supervisor|dr-kube-state-metrics|dr-backend\"})", "instant": true, "refId": "A"}],
+          "title": "DR K3s 수집 상태", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 3}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 16, "y": 0},
+          "id": 5,
+          "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [{"editorMode": "code", "expr": "sum(ALERTS{alertstate=\"firing\"}) or vector(0)", "instant": true, "refId": "A"}],
+          "title": "발생 중 Alert", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "Node Exporter 수집이 실패한 VM만 표시합니다. 모두 정상이면 '장애 VM 없음'으로 표시됩니다. VM 자체 장애뿐 아니라 Node Exporter 또는 네트워크 장애도 포함됩니다.",
+          "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "mappings": [{"options": {"0": {"color": "red", "text": "DOWN"}, "1": {"color": "green", "text": "장애 VM 없음"}}, "type": "value"}], "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 5, "w": 4, "x": 20, "y": 0},
+          "id": 6,
+          "options": {"colorMode": "background", "graphMode": "none", "orientation": "vertical", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}, "textMode": "value_and_name", "wideLayout": true},
+          "targets": [
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-vm\",instance=\"192.168.14.11:9100\"} == 0", "instant": true, "legendFormat": "lb1 (192.168.14.11)", "refId": "A"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-vm\",instance=\"192.168.14.12:9100\"} == 0", "instant": true, "legendFormat": "lb2 (192.168.14.12)", "refId": "B"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-vm\",instance=\"192.168.14.21:9100\"} == 0", "instant": true, "legendFormat": "devops/maxscale (192.168.14.21)", "refId": "C"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-vm\",instance=\"192.168.14.51:9100\"} == 0", "instant": true, "legendFormat": "db-primary (192.168.14.51)", "refId": "D"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-vm\",instance=\"192.168.14.52:9100\"} == 0", "instant": true, "legendFormat": "db-replica (192.168.14.52)", "refId": "E"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-vm\",instance=\"192.168.14.61:9100\"} == 0", "instant": true, "legendFormat": "nfs (192.168.14.61)", "refId": "F"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-vm\",instance=\"192.168.14.62:9100\"} == 0", "instant": true, "legendFormat": "infra (192.168.14.62)", "refId": "G"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-vm\",instance=\"192.168.14.72:9100\"} == 0", "instant": true, "legendFormat": "minio (192.168.14.72)", "refId": "H"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-k8s-existing\",instance=\"192.168.34.31:9100\"} == 0", "instant": true, "legendFormat": "control1 (192.168.34.31)", "refId": "I"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-k8s-existing\",instance=\"192.168.34.32:9100\"} == 0", "instant": true, "legendFormat": "control2 (192.168.34.32)", "refId": "J"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-k8s-existing\",instance=\"192.168.34.33:9100\"} == 0", "instant": true, "legendFormat": "control3 (192.168.34.33)", "refId": "K"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-k8s-existing\",instance=\"192.168.34.41:9100\"} == 0", "instant": true, "legendFormat": "worker1 (192.168.34.41)", "refId": "L"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-k8s-existing\",instance=\"192.168.34.42:9100\"} == 0", "instant": true, "legendFormat": "worker2 (192.168.34.42)", "refId": "M"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-k8s-existing\",instance=\"192.168.34.43:9100\"} == 0", "instant": true, "legendFormat": "worker3 (192.168.34.43)", "refId": "N"},
+            {"editorMode": "code", "expr": "up{job=\"node-exporter-k8s-existing\",instance=\"192.168.34.71:9100\"} == 0", "instant": true, "legendFormat": "dr-k3s (192.168.34.71)", "refId": "O"},
+            {"editorMode": "code", "expr": "up{job=\"monitoring-node\",instance=\"monitoring\"} == 0", "instant": true, "legendFormat": "monitoring (192.168.14.73)", "refId": "P"},
+            {"editorMode": "code", "expr": "vector(1) unless (count(up{job=~\"node-exporter-vm|node-exporter-k8s-existing|monitoring-node\"} == 0) > 0)", "instant": true, "legendFormat": "정상", "refId": "Z"}
+          ],
+          "title": "현재 장애 VM", "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "decimals": 1, "max": 100, "min": 0, "unit": "percent"}, "overrides": []},
+          "gridPos": {"h": 9, "w": 8, "x": 0, "y": 5}, "id": 7,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"editorMode": "code", "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{job=~\"node-exporter-vm|node-exporter-k8s-existing\",mode=\"idle\"}[5m])) * 100)", "legendFormat": "{{instance}}", "refId": "A"}],
+          "title": "전체 서버 CPU 사용률", "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "decimals": 1, "max": 100, "min": 0, "unit": "percent"}, "overrides": []},
+          "gridPos": {"h": 9, "w": 8, "x": 8, "y": 5}, "id": 8,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"editorMode": "code", "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=~\"node-exporter-vm|node-exporter-k8s-existing\"} / node_memory_MemTotal_bytes{job=~\"node-exporter-vm|node-exporter-k8s-existing\"})", "legendFormat": "{{instance}}", "refId": "A"}],
+          "title": "전체 서버 RAM 사용률", "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "decimals": 1, "max": 100, "min": 0, "unit": "percent"}, "overrides": []},
+          "gridPos": {"h": 9, "w": 8, "x": 16, "y": 5}, "id": 9,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"editorMode": "code", "expr": "100 * (1 - node_filesystem_avail_bytes{job=~\"node-exporter-vm|node-exporter-k8s-existing\",mountpoint=\"/\",fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{job=~\"node-exporter-vm|node-exporter-k8s-existing\",mountpoint=\"/\",fstype!~\"tmpfs|overlay\"})", "legendFormat": "{{instance}}", "refId": "A"}],
+          "title": "전체 서버 루트 디스크", "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "현재 발생 중인 경보의 이름과 대상을 표시합니다. Watchdog와 InfoInhibitor는 모니터링 시스템 자체 확인용 경보이며 실제 장애와 구분해서 판단합니다.",
+          "fieldConfig": {"defaults": {}, "overrides": []},
+          "gridPos": {"h": 9, "w": 24, "x": 0, "y": 14},
+          "id": 10,
+          "options": {"cellHeight": "sm", "showHeader": true},
+          "targets": [{"editorMode": "code", "expr": "ALERTS{alertstate=\"firing\"}", "format": "table", "instant": true, "refId": "A"}],
+          "title": "발생 중 Alert 상세 (경보명 / 심각도 / 대상)",
+          "type": "table"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["InfraReady", "Overview"],
+      "templating": {"list": [{"current": {"selected": false, "text": "Prometheus", "value": "prometheus"}, "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false, "name": "DS_PROMETHEUS", "options": [], "query": "prometheus", "refresh": 1, "type": "datasource"}]},
+      "time": {"from": "now-1h", "to": "now"},
+      "timezone": "browser",
+      "title": "01 InfraReady Overview",
+      "uid": "infraready-overview-v2",
+      "version": 1
+    }
